@@ -3,7 +3,9 @@
 // ═══════════════════════════════════════════════════════════
 
 // ═══ Mathan Institute - Core App ═══
-const API = '';
+// Backend configuration: supports same-origin, Netlify proxy, or explicit Render backend URL
+const BACKEND_URL = (typeof window !== 'undefined' && (window.MANTHAN_BACKEND_URL || window.BACKEND_URL || localStorage.getItem('manthan_backend_url') || '')) || '';
+const API = BACKEND_URL ? BACKEND_URL.replace(/\/+$/, '') : '';
 let currentUser = null;
 let currentPage = 'dashboard';
 let chartInstances = {};
@@ -27,7 +29,19 @@ let chartInstances = {};
 
 // ─── UTILITY ───
 const $ = id => document.getElementById(id);
-const api = async (url, opts) => { try { const r = await fetch(API + url, { headers: { 'Content-Type': 'application/json' }, ...opts }); return r.json(); } catch (e) { return { error: e.message }; } };
+const api = async (url, opts) => {
+    try {
+        const fullUrl = url.startsWith('http') ? url : ((API || '') + url);
+        const r = await fetch(fullUrl, {
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            ...opts
+        });
+        return r.json();
+    } catch (e) {
+        return { error: e.message };
+    }
+};
 const post = (url, data) => api(url, { method: 'POST', body: JSON.stringify(data) });
 const put = (url, data) => api(url, { method: 'PUT', body: JSON.stringify(data) });
 const del = url => api(url, { method: 'DELETE' });
@@ -374,8 +388,10 @@ function initApp() {
 // ─── REAL-TIME (Socket.IO) ───
 var socket = null;
 function initSocket() {
+    if (typeof io === 'undefined') return;
     if (socket) socket.disconnect();
-    socket = io();
+    const socketTarget = BACKEND_URL || window.location.origin;
+    socket = io(socketTarget, { withCredentials: true });
     socket.emit('register', { role: currentUser.role, id: currentUser.id });
 
     socket.on('attendance_updated', function() { if (currentPage === 'attendance' || currentPage === 'dashboard') navigate(currentPage); });
@@ -1581,7 +1597,7 @@ async function savePaymentSettings(e) {
         const fd = new FormData();
         fd.append('qr', fileInput.files[0]);
         try {
-            const resp = await fetch('/api/settings/qr', { method: 'POST', body: fd });
+            const resp = await fetch((API || '') + '/api/settings/qr', { method: 'POST', body: fd, credentials: 'include' });
             const j = await resp.json();
             if (!j.success) { toast(j.error || 'QR upload failed', 'error'); return; }
         } catch (err) { toast('QR upload failed: ' + err.message, 'error'); return; }
@@ -1936,7 +1952,7 @@ async function saveTest(e) {
         if (fileInput && fileInput.files[0]) formData.append('testFile', fileInput.files[0]);
     }
     try {
-        var resp = await fetch('/api/tests', { method: 'POST', body: formData });
+        var resp = await fetch((API || '') + '/api/tests', { method: 'POST', body: formData, credentials: 'include' });
         var r = await resp.json();
         if (r.success) { toast('Test created' + (r.questions ? ' with ' + r.questions + ' questions' : '')); closeModal(); loadTests(); }
         else toast(r.error || 'Error', 'error');

@@ -10,7 +10,7 @@ const poolConfig = connectionString
         connectionString,
         ssl: process.env.DB_SSL === 'false'
             ? false
-            : (isProduction || connectionString.includes('sslmode=require') || process.env.DB_SSL === 'true'
+            : (isProduction || connectionString.includes('sslmode=require') || connectionString.includes('neon.tech') || process.env.DB_SSL === 'true'
                 ? { rejectUnauthorized: false }
                 : false),
         max: parseInt(process.env.DB_POOL_MAX) || 10

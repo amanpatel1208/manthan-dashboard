@@ -34,9 +34,15 @@ if (isProduction || process.env.TRUST_PROXY === 'true') {
     app.set('trust proxy', 1);
 }
 
-// Middleware
+// CORS configuration (supports Netlify frontend calling Render backend)
+const corsOrigin = process.env.CORS_ORIGIN;
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin, callback) => {
+        if (!origin || !corsOrigin || corsOrigin === '*') return callback(null, true);
+        const allowed = corsOrigin.split(',').map(s => s.trim());
+        if (allowed.includes(origin)) return callback(null, true);
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -55,7 +61,7 @@ app.use(session({
     cookie: {
         maxAge: 86400000, // 24 hours
         secure: process.env.COOKIE_SECURE === 'true' || (isProduction && process.env.COOKIE_SECURE !== 'false'),
-        sameSite: 'lax',
+        sameSite: process.env.COOKIE_SAMESITE || (isProduction && process.env.COOKIE_SECURE !== 'false' ? 'none' : 'lax'),
         httpOnly: true
     }
 }));

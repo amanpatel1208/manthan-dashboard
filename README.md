@@ -110,34 +110,38 @@ npm run build
 
 `npm start` and `npm run dev` run the build automatically (`prestart` / `predev`).
 
-## Deployment
+## Cloud Deployment (Render + Netlify + NeonDB)
 
-### Option 1: Docker / Docker Compose (Recommended)
+### 1. Database (NeonDB)
+1. Create a serverless PostgreSQL database at [Neon.tech](https://neon.tech).
+2. Copy the PostgreSQL connection string (`DATABASE_URL`), which looks like:
+   `postgresql://[user]:[password]@[endpoint].neon.tech/neondb?sslmode=require`
 
-1. Review and configure `.env` (refer to `.env.example`).
-2. Run the full stack (PostgreSQL + App) with Docker Compose:
-   ```bash
-   docker compose up -d --build
-   ```
-3. Open `http://localhost:3000`. Persistent database data is stored in the `pgdata` volume and uploads in `uploads_data`.
+### 2. Backend Web Service (Render)
+1. In [Render Dashboard](https://dashboard.render.com), create a new **Web Service** from the GitHub repository.
+2. Settings:
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm run setup-db && npm start`
+3. Environment Variables:
+   - `DATABASE_URL`: *(Your NeonDB connection string)*
+   - `SESSION_SECRET`: *(A long random secret string)*
+   - `NODE_ENV`: `production`
+   - `TRUST_PROXY`: `true`
+   - `COOKIE_SECURE`: `true`
+   - `COOKIE_SAMESITE`: `none`
+   - `CORS_ORIGIN`: `*` (or your Netlify site URL)
+   - `ADMIN_USERNAME`: `admin` (or custom)
+   - `ADMIN_PASSWORD`: `admin123` (or custom)
 
-### Option 2: Cloud PaaS (Render, Railway, Fly.io, Heroku)
-
-1. Provision a PostgreSQL instance on your cloud provider (e.g. Render Postgres, Railway Postgres, Neon, or Supabase).
-2. Set the following environment variables:
-   - `DATABASE_URL`: Connection string provided by your database host (e.g. `postgresql://...`).
-   - `SESSION_SECRET`: A long random string.
-   - `NODE_ENV`: `production`.
-   - `TRUST_PROXY`: `true`.
-3. Set the build command:
-   ```bash
-   npm install && npm run build
-   ```
-4. Set the start command:
-   ```bash
-   npm start
-   ```
-   *Note: Database migrations run automatically on start via `server/migrate.js`, and health checks are available at `/health`.*
+### 3. Frontend Static Hosting (Netlify)
+1. In [Netlify](https://app.netlify.com), click **Add new site** > **Import an existing project** from GitHub.
+2. Settings:
+   - **Base directory**: *(Leave blank)*
+   - **Build command**: `npm run build`
+   - **Publish directory**: `public`
+3. `netlify.toml` and `public/_redirects` proxy `/api/*` and `/uploads/*` to your Render backend and provide SPA fallback.
+4. If connecting directly to Render without proxy, you can set `window.BACKEND_URL = 'https://your-backend.onrender.com'` or configure Netlify redirects.
 
 ## Database migrations
 

@@ -306,7 +306,7 @@ async function saveTest(e) {
         if (fileInput && fileInput.files[0]) formData.append('testFile', fileInput.files[0]);
     }
     try {
-        var resp = await fetch('/api/tests', { method: 'POST', body: formData });
+        var resp = await fetch((API || '') + '/api/tests', { method: 'POST', body: formData, credentials: 'include' });
         var r = await resp.json();
         if (r.success) { toast('Test created' + (r.questions ? ' with ' + r.questions + ' questions' : '')); closeModal(); loadTests(); }
         else toast(r.error || 'Error', 'error');

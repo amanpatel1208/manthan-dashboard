@@ -4,7 +4,12 @@ const pool = require('../config/db');
 let io = null;
 
 function initSocket(server) {
-    io = new Server(server, { cors: { origin: '*' } });
+    io = new Server(server, {
+        cors: {
+            origin: (origin, cb) => cb(null, true),
+            credentials: true
+        }
+    });
 
     io.on('connection', (socket) => {
         socket.on('register', (data) => {

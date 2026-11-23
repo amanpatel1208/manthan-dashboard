@@ -390,7 +390,7 @@ async function savePaymentSettings(e) {
         const fd = new FormData();
         fd.append('qr', fileInput.files[0]);
         try {
-            const resp = await fetch('/api/settings/qr', { method: 'POST', body: fd });
+            const resp = await fetch((API || '') + '/api/settings/qr', { method: 'POST', body: fd, credentials: 'include' });
             const j = await resp.json();
             if (!j.success) { toast(j.error || 'QR upload failed', 'error'); return; }
         } catch (err) { toast('QR upload failed: ' + err.message, 'error'); return; }

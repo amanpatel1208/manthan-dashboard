@@ -6,7 +6,7 @@ async function setup() {
     const connectionString = process.env.DATABASE_URL;
     const sslConfig = process.env.DB_SSL === 'false'
         ? false
-        : (isProduction || (connectionString && connectionString.includes('sslmode=require')) || process.env.DB_SSL === 'true'
+        : (isProduction || (connectionString && (connectionString.includes('sslmode=require') || connectionString.includes('neon.tech'))) || process.env.DB_SSL === 'true'
             ? { rejectUnauthorized: false }
             : false);
 
