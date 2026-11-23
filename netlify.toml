@@ -2,23 +2,22 @@
   publish = "public"
   command = "npm run build"
 
-# Proxy API and uploads to the Render backend service
-# Update the target URL to your actual Render backend URL if using Netlify proxy
+# Proxy API and uploads to the live Render backend service
 [[redirects]]
   from = "/api/*"
-  to = "https://manthan-dashboard-backend.onrender.com/api/:splat"
+  to = "https://manthan-dashboard.onrender.com/api/:splat"
   status = 200
   force = false
 
 [[redirects]]
   from = "/uploads/*"
-  to = "https://manthan-dashboard-backend.onrender.com/uploads/:splat"
+  to = "https://manthan-dashboard.onrender.com/uploads/:splat"
   status = 200
   force = false
 
 [[redirects]]
   from = "/health"
-  to = "https://manthan-dashboard-backend.onrender.com/health"
+  to = "https://manthan-dashboard.onrender.com/health"
   status = 200
   force = false
 

@@ -386,7 +386,7 @@ var socket = null;
 function initSocket() {
     if (typeof io === 'undefined') return;
     if (socket) socket.disconnect();
-    const socketTarget = BACKEND_URL || window.location.origin;
+    const socketTarget = BACKEND_URL || (window.location.hostname.includes('netlify.app') ? 'https://manthan-dashboard.onrender.com' : window.location.origin);
     socket = io(socketTarget, { withCredentials: true });
     socket.emit('register', { role: currentUser.role, id: currentUser.id });
 
